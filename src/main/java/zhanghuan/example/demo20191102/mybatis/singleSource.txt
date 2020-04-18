@@ -1,0 +1,23 @@
+配置mybatis的oracle单个数据源连接：
+
+1、主配置文件application.properties增加数据库连接配置。
+   #配置单数据源的oracle
+   spring.datasource.url=jdbc:oracle:thin:@localhost:1521:orcl
+   spring.datasource.username=hr
+   spring.datasource.password=zhangHUAN123456
+   spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+
+2、编写mapper.java 和mapper.xml放在一起。
+
+3、启动类上 增加mapper文件夹的注解。
+   @MapperScan(basePackages = "zhanghuan.example.demo20191102.mybatis.mapper")
+
+4、pom.xml文件，增加编译mapper.xml。
+   <resources>
+       <resource>
+           <directory>src/main/java/</directory>
+           <includes>
+               <include>**/*.xml</include>
+           </includes>
+       </resource>
+   </resources>

@@ -1,0 +1,97 @@
+配置多数据源注意事项：
+
+1、主配置文件  增加多个数据源的配置：
+##配置多数据源  , 用2个用户模拟2个数据源
+spring.datasource.one.url=jdbc:oracle:thin:@localhost:1521:orcl
+spring.datasource.one.username=hr
+spring.datasource.one.password=zhangHUAN123456
+spring.datasource.one.type=com.alibaba.druid.pool.DruidDataSource
+
+
+spring.datasource.two.url=jdbc:oracle:thin:@localhost:1521:orcl
+spring.datasource.two.username=system
+spring.datasource.two.password=zhangHUAN123456
+spring.datasource.two.type=com.alibaba.druid.pool.DruidDataSource
+
+2、编写DataSourceConfig.java，得到指定配置的数据源。
+@Configuration
+public class DataSourceConfig {
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource.one")
+    DataSource dsOne(){
+        return DruidDataSourceBuilder.create().build();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource.two")
+    DataSource dsTwo(){
+        return DruidDataSourceBuilder.create().build();
+    }
+}
+
+3、分别配置2个SqlSessionFactory,通过SqlSessionFactoryBean创建。和2个SqlSessionTemplate。
+@Configuration
+@MapperScan(value = "zhanghuan.example.demo20191102.mybatisMuti.mapper1",sqlSessionFactoryRef = "sqlSessionFactory1")
+public class MybatisConfigOne {
+    @Autowired
+    @Qualifier("dsOne")
+    DataSource dsOne;
+
+    @Bean
+    SqlSessionFactory sqlSessionFactory1(){
+        SqlSessionFactory factory = null;
+        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
+        factoryBean.setDataSource(dsOne);
+        try {
+            factory = factoryBean.getObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return factory;
+    }
+
+    @Bean
+    SqlSessionTemplate sqlSessionTemplate1(){
+        return new SqlSessionTemplate(sqlSessionFactory1());
+    }
+}
+
+@Configuration
+@MapperScan(value = "zhanghuan.example.demo20191102.mybatisMuti.mapper2",sqlSessionFactoryRef = "sqlSessionFactory2")
+public class MybatisConfigTwo {
+    @Autowired
+    @Qualifier("dsTwo")
+    DataSource dsTwo;
+
+    @Bean
+    SqlSessionFactory sqlSessionFactory2(){
+        SqlSessionFactory factory = null;
+        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
+        factoryBean.setDataSource(dsTwo);
+        try {
+            factory = factoryBean.getObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return factory;
+    }
+
+    @Bean
+    SqlSessionTemplate sqlSessionTemplate2(){
+        return new SqlSessionTemplate(sqlSessionFactory2());
+    }
+}
+
+
+4、pom.xml中增加配置项，读取mapper.xml,因为此配置，放在java代码中。
+<resources>
+    <resource>
+        <directory>src/main/java/</directory>
+        <includes>
+            <include>**/*.xml</include>
+        </includes>
+    </resource>
+</resources>
+
+5、创建mapper.java，和 mapper.xml 放在一个目录下。xml文件的加载通过第4步处理。
+   java文件上加上注解，@Mapper ，这样就不用在启动类上加 @MapperScan

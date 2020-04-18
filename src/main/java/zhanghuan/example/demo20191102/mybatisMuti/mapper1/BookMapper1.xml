@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zhanghuan.example.demo20191102.mybatisMuti.mapper1.BookMapper1">
+
+    <select id="getAllBook" resultType="zhanghuan.example.demo20191102.mybatisMuti.bean.Book">
+        select * from a_book
+    </select>
+
+</mapper>
